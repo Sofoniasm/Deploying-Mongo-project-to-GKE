@@ -15,16 +15,16 @@ spec:
     spec:
       containers:
       - name: mongo
-        image: mongo:8.0.0
+        image: mongo:5.0.6  # Adjusted to a more stable version
         ports:
         - containerPort: 27017
         resources:
           requests:
+            memory: "1Gi"    # Adjusted resources
+            cpu: "250m"
+          limits:
             memory: "2Gi"
             cpu: "500m"
-          limits:
-            memory: "4Gi"
-            cpu: "1"
         env:
         - name: MONGO_INITDB_ROOT_USERNAME
           valueFrom:
@@ -48,7 +48,6 @@ spec:
             secretKeyRef:
               name: mongodb-colordb-creds
               key: PASSWORD  
-
         volumeMounts:
         - name: mongodb-init-config
           mountPath: /docker-entrypoint-initdb.d
@@ -68,6 +67,15 @@ spec:
       - name: mongodb-init-config
         configMap:
           name: mongodb-init-colordb
+      tolerations:
+        - key: "node.cloudprovider.kubernetes.io/uninitialized"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+        - key: "cloud.google.com/gke-quick-remove"
+          operator: "Equal"
+          value: "true"
+          effect: "NoExecute"
 
   volumeClaimTemplates:
   - metadata:

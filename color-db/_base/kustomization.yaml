@@ -3,14 +3,15 @@ kind: Kustomization
 
 resources:
   - mongodb-svc.yaml
-  - mongodb-ss.yaml
-  
-commonLabels:
-  app: mongodb
-  project: proj-gke
+  - mongodb-ss.yaml  # DO NOT add `mongodb-init.js` here
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app: mongodb
+      project: proj-gke
 
 configMapGenerator:
   - name: mongodb-init-colordb
     files:
-      - mongodb-init.js
-  
+      - mongodb-init.js  # Corrected relative path (it must be in `_base`)
