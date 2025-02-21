@@ -20,20 +20,61 @@ spec:
         - containerPort: 27017
         resources:
           requests:
+            memory: "2Gi"
+            cpu: "500m"
+          limits:
             memory: "4Gi"
             cpu: "1"
-          limits:
-            memory: "8Gi"
-            cpu: "2"
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-root-creds
+              key: USERNAME
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-root-creds
+              key: PASSWORD
+        - name: DB_NAME
+          value: "color-db"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-colordb-creds
+              key: USERNAME
+        - name: DB_PASSWORD   
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-colordb-creds
+              key: PASSWORD  
+
         volumeMounts:
-        - name: mongodb-data
-          mountPath: /data/db
+        - name: mongodb-init-config
+          mountPath: /docker-entrypoint-initdb.d
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                - us-central1-a
+                - us-central1-b
+                - us-central1-c
+                - us-central1-f
+      volumes:
+      - name: mongodb-init-config
+        configMap:
+          name: mongodb-init-colordb
+
   volumeClaimTemplates:
   - metadata:
       name: mongodb-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard-rwo"
       resources:
         requests:
-          storage: 1Gi
-    
+          storage: 10Gi

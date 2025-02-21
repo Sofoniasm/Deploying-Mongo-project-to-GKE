@@ -3,8 +3,8 @@ kind: Kustomization
 
 resources:
   - mongodb-svc.yaml
- # - mongodb-deployment.yaml
- # - mongodb-configmap.yaml
+  - mongodb-ss.yaml
+  
 commonLabels:
   app: mongodb
   project: proj-gke
